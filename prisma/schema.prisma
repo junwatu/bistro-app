@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["clientExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model customer {
+  id           String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name         String   @db.VarChar(255)
+  address      String   @db.VarChar(255)
+  phone_number String   @db.VarChar(255)
+  user_id      String?  @db.Uuid
+  created_at   DateTime @default(now()) @db.Timestamp(6)
+  updated_at   DateTime @default(now()) @db.Timestamp(6)
+  user         user?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model order {
+  id                                                  String      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  status                                              String      @db.VarChar(255)
+  restaurant_id                                       String?     @db.Uuid
+  customer_service_representative_id                  String?     @db.Uuid
+  operations_manager_id                               String?     @db.Uuid
+  delivery_driver_id                                  String?     @db.Uuid
+  created_at                                          DateTime    @default(now()) @db.Timestamp(6)
+  updated_at                                          DateTime    @default(now()) @db.Timestamp(6)
+  user_order_customer_service_representative_idTouser user?       @relation("order_customer_service_representative_idTouser", fields: [customer_service_representative_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user_order_delivery_driver_idTouser                 user?       @relation("order_delivery_driver_idTouser", fields: [delivery_driver_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user_order_operations_manager_idTouser              user?       @relation("order_operations_manager_idTouser", fields: [operations_manager_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  restaurant                                          restaurant? @relation(fields: [restaurant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model restaurant {
+  id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  description String?  @db.VarChar(255)
+  image       String?  @db.VarChar(255)
+  name        String   @db.VarChar(255)
+  created_at  DateTime @default(now()) @db.Timestamp(6)
+  updated_at  DateTime @default(now()) @db.Timestamp(6)
+  user_id     String   @db.Uuid
+  tenant_id   String   @db.VarChar(255)
+  order       order[]
+  user        user     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model user {
+  id                                                   String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email                                                String       @unique @db.VarChar(255)
+  firstName                                            String?      @db.VarChar(255)
+  lastName                                             String?      @db.VarChar(255)
+  roq_user_id                                          String       @db.VarChar(255)
+  tenant_id                                            String       @db.VarChar(255)
+  created_at                                           DateTime     @default(now()) @db.Timestamp(6)
+  updated_at                                           DateTime     @default(now()) @db.Timestamp(6)
+  customer                                             customer[]
+  order_order_customer_service_representative_idTouser order[]      @relation("order_customer_service_representative_idTouser")
+  order_order_delivery_driver_idTouser                 order[]      @relation("order_delivery_driver_idTouser")
+  order_order_operations_manager_idTouser              order[]      @relation("order_operations_manager_idTouser")
+  restaurant                                           restaurant[]
+}
