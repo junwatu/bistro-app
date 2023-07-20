@@ -1,5 +1,4 @@
 import { Button, Flex, Heading, Image, Text, Stack, useBreakpointValue, Box, Link } from '@chakra-ui/react';
-
 import { signIn, signUp, requireNextAuth } from '@roq/nextjs';
 
 import Head from 'next/head';
